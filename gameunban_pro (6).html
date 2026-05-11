@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameUnban Pro - Layanan Unban Akun Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #00d4ff;
+            --secondary: #ff0055;
+            --accent: #7b2dff;
+            --dark: #0a0a0f;
+            --darker: #050508;
+            --card: #12121a;
+            --success: #00ff88;
+            --warning: #ffaa00;
+            --text: #e0e0ff;
+            --text-dim: #8888aa;
+            --gold: #ffd700;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--darker);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .bg-animation {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            background: 
+                radial-gradient(ellipse at 20% 80%, rgba(123, 45, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(0, 212, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(255, 0, 85, 0.05) 0%, transparent 70%);
+        }
+
+        .grid-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            background-image: 
+                linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        header {
+            background: rgba(10, 10, 15, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+            padding: 1rem 2rem;
+            position: sticky; top: 0; z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px; margin: 0 auto;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .logo {
+            display: flex; align-items: center; gap: 12px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem; font-weight: 900; color: var(--primary);
+            text-decoration: none;
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+        }
+
+        .logo i { font-size: 2rem; animation: pulse 2s ease-in-out infinite; }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .live-indicator {
+            display: flex; align-items: center; gap: 8px;
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            padding: 8px 16px; border-radius: 20px; font-weight: 600;
+        }
+
+        .live-dot {
+            width: 8px; height: 8px; background: var(--success);
+            border-radius: 50%; animation: blink 1s infinite;
+        }
+
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+        .hero {
+            text-align: center; padding: 3rem 2rem; margin-bottom: 2rem;
+        }
+
+        .hero h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem; font-weight: 900; margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary), var(--accent), var(--secondary));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            filter: drop-shadow(0 0 30px rgba(0, 212, 255, 0.3));
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem; color: var(--text-dim); margin-bottom: 0.5rem;
+        }
+
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255, 215, 0, 0.1); border: 1px solid rgba(255, 215, 0, 0.3);
+            color: var(--gold); padding: 8px 20px; border-radius: 20px;
+            font-weight: 700; font-size: 0.95rem;
+        }
+
+        .stats-bar {
+            display: flex; justify-content: center; gap: 3rem;
+            margin-top: 2rem; flex-wrap: wrap;
+        }
+
+        .stat-item { text-align: center; }
+        .stat-number {
+            font-family: 'Orbitron', sans-serif; font-size: 2rem;
+            font-weight: 700; color: var(--primary);
+        }
+        .stat-label {
+            color: var(--text-dim); font-size: 0.9rem;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', sans-serif; font-size: 1.8rem;
+            margin-bottom: 2rem; display: flex; align-items: center; gap: 12px;
+        }
+        .section-title i { color: var(--secondary); }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem; margin-bottom: 4rem;
+        }
+
+        .game-card {
+            background: var(--card);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px; overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer; position: relative;
+        }
+
+        .game-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent), var(--secondary));
+            opacity: 0; transition: opacity 0.3s;
+        }
+
+        .game-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: rgba(0, 212, 255, 0.3);
+            box-shadow: 0 20px 40px rgba(0, 212, 255, 0.1);
+        }
+
+        .game-card:hover::before { opacity: 1; }
+
+        .game-image {
+            width: 100%; height: 180px; object-fit: cover;
+            transition: transform 0.4s;
+        }
+        .game-card:hover .game-image { transform: scale(1.1); }
+
+        .game-info { padding: 1.5rem; }
+        .game-title {
+            font-family: 'Orbitron', sans-serif; font-size: 1.2rem;
+            font-weight: 700; margin-bottom: 0.5rem; color: #fff;
+        }
+        .game-meta {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 1rem;
+        }
+        .game-type {
+            background: rgba(0, 212, 255, 0.1); color: var(--primary);
+            padding: 4px 12px; border-radius: 12px;
+            font-size: 0.85rem; font-weight: 600;
+        }
+        .game-status {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 0.9rem; color: var(--success);
+        }
+        .game-status i { font-size: 0.6rem; }
+        .game-desc {
+            color: var(--text-dim); font-size: 0.9rem; line-height: 1.5;
+        }
+        .select-btn {
+            width: 100%; margin-top: 1rem; padding: 12px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border: none; border-radius: 8px; color: #fff;
+            font-family: 'Orbitron', sans-serif; font-weight: 700;
+            font-size: 0.95rem; cursor: pointer; transition: all 0.3s;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .select-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.4);
+        }
+
+        /* MODAL OVERLAY BASE */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px);
+            z-index: 1000; display: none; justify-content: center; align-items: center;
+            opacity: 0; transition: opacity 0.3s; overflow-y: auto;
+        }
+        .modal-overlay.active { display: flex; opacity: 1; }
+
+        .modal-box {
+            background: var(--card);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 20px; width: 90%; max-width: 550px;
+            padding: 2rem; position: relative; margin: 2rem auto;
+            transform: scale(0.8); transition: transform 0.3s;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+        }
+        .modal-overlay.active .modal-box { transform: scale(1); }
+
+        .modal-header {
+            text-align: center; margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .modal-header h2 {
+            font-family: 'Orbitron', sans-serif; font-size: 1.6rem;
+            color: var(--primary); margin-bottom: 0.3rem;
+        }
+        .modal-header p { color: var(--text-dim); font-size: 0.9rem; }
+
+        .close-btn {
+            position: absolute; top: 1rem; right: 1rem;
+            background: none; border: none; color: var(--text-dim);
+            font-size: 1.5rem; cursor: pointer; transition: color 0.3s;
+            width: 40px; height: 40px; display: flex;
+            align-items: center; justify-content: center; border-radius: 50%;
+        }
+        .close-btn:hover { color: var(--secondary); background: rgba(255, 0, 85, 0.1); }
+
+        /* PRICING */
+        .price-list { margin-bottom: 1.5rem; }
+        .price-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 16px; margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px; cursor: pointer;
+            transition: all 0.3s;
+        }
+        .price-item:hover {
+            background: rgba(0, 212, 255, 0.05);
+            border-color: rgba(0, 212, 255, 0.2);
+            transform: translateX(5px);
+        }
+        .price-item.selected {
+            background: rgba(0, 212, 255, 0.1);
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.1);
+        }
+        .price-item.vip { border-left: 3px solid var(--gold); }
+        .price-item.perm { border-left: 3px solid var(--secondary); }
+        .price-item.daily { border-left: 3px solid var(--success); }
+
+        .price-label {
+            display: flex; align-items: center; gap: 10px;
+            font-weight: 600; font-size: 1rem;
+        }
+        .price-label i { font-size: 1.1rem; }
+        .price-label .vip-tag {
+            background: linear-gradient(135deg, var(--gold), #ffaa00);
+            color: var(--dark); font-size: 0.7rem;
+            padding: 2px 8px; border-radius: 6px;
+            font-weight: 700; text-transform: uppercase;
+        }
+        .price-amount {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700; font-size: 1.1rem;
+            color: var(--primary);
+        }
+
+        .show-qris-btn {
+            width: 100%; padding: 14px;
+            background: linear-gradient(135deg, var(--gold), #ffaa00);
+            border: none; border-radius: 12px; color: var(--dark);
+            font-family: 'Orbitron', sans-serif; font-weight: 900;
+            font-size: 1rem; cursor: pointer; transition: all 0.3s;
+            text-transform: uppercase; letter-spacing: 1px;
+            display: none;
+        }
+        .show-qris-btn.active { display: block; }
+        .show-qris-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
+        }
+
+        /* QRIS */
+        .qris-image-container {
+            background: #fff; padding: 15px; border-radius: 12px;
+            margin-bottom: 1rem; text-align: center;
+        }
+        .qris-image {
+            width: 100%; max-width: 280px; border-radius: 8px;
+        }
+        .qris-amount {
+            text-align: center; font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem; font-weight: 900; color: var(--gold);
+            margin-bottom: 1rem;
+        }
+        .qris-warning {
+            background: rgba(255, 0, 85, 0.1);
+            border: 1px solid rgba(255, 0, 85, 0.3);
+            border-radius: 10px; padding: 12px 16px;
+            margin-bottom: 1rem; font-size: 0.9rem;
+            color: var(--secondary); text-align: center;
+        }
+        .qris-warning i { margin-right: 6px; }
+
+        /* UPLOAD BOX */
+        .file-upload-box {
+            position: relative; display: block; padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px dashed rgba(0, 212, 255, 0.3);
+            border-radius: 12px; text-align: center;
+            cursor: pointer; transition: all 0.3s;
+        }
+        .file-upload-box:hover {
+            border-color: var(--primary);
+            background: rgba(0, 212, 255, 0.05);
+        }
+        .file-upload-box input {
+            position: absolute; width: 100%; height: 100%;
+            top: 0; left: 0; opacity: 0; cursor: pointer;
+        }
+        .file-upload-box i {
+            font-size: 2rem; color: var(--primary);
+            margin-bottom: 8px; display: block;
+        }
+        .file-upload-box-text { color: var(--text-dim); font-size: 0.9rem; }
+        .file-name-display {
+            margin-top: 8px; color: var(--success);
+            font-weight: 600; display: none;
+        }
+        .file-name-display.show { display: block; }
+
+        /* TOKEN SECTION */
+        .token-section {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .token-waiting {
+            text-align: center; padding: 2rem 1.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 2px dashed rgba(255, 170, 0, 0.2);
+            border-radius: 12px;
+        }
+
+        .token-waiting i {
+            font-size: 3rem; color: var(--warning);
+            margin-bottom: 1rem; animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .token-waiting h4 {
+            color: var(--warning); font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem; margin-bottom: 0.5rem;
+        }
+
+        .token-waiting p {
+            color: var(--text-dim); font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .token-waiting .contact-hint {
+            background: rgba(0, 212, 255, 0.05);
+            border: 1px solid rgba(0, 212, 255, 0.1);
+            border-radius: 8px; padding: 10px;
+            font-size: 0.85rem; color: var(--text-dim);
+        }
+        .token-waiting .contact-hint i { color: var(--primary); margin-right: 5px; }
+
+        .confirm-admin-btn {
+            width: 100%; padding: 14px; margin-top: 1rem;
+            background: linear-gradient(135deg, var(--secondary), #ff3377);
+            border: none; border-radius: 12px; color: #fff;
+            font-family: 'Orbitron', sans-serif; font-weight: 700;
+            font-size: 1rem; cursor: pointer; transition: all 0.3s;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .confirm-admin-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 0, 85, 0.3);
+        }
+        .confirm-admin-btn:disabled {
+            opacity: 0.5; cursor: not-allowed; transform: none;
+        }
+
+        /* TOKEN INPUT AREA (setelah konfirmasi) */
+        .token-input-area {
+            display: none;
+        }
+        .token-input-area.active {
+            display: block;
+        }
+
+        .token-input-group {
+            margin-bottom: 1rem;
+        }
+
+        .token-input-group label {
+            display: block; margin-bottom: 0.5rem;
+            font-weight: 600; color: var(--text);
+            font-size: 0.95rem;
+        }
+
+        .token-input-group label i {
+            margin-right: 8px; color: var(--primary);
+        }
+
+        .token-input {
+            width: 100%; padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px; color: #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+        .token-input:focus {
+            outline: none; border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.1);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .token-input::placeholder { color: var(--text-dim); }
+
+        .verify-token-btn {
+            width: 100%; padding: 14px;
+            background: linear-gradient(135deg, var(--success), #00cc6a);
+            border: none; border-radius: 12px; color: var(--dark);
+            font-family: 'Orbitron', sans-serif; font-weight: 900;
+            font-size: 1rem; cursor: pointer; transition: all 0.3s;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .verify-token-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.3);
+        }
+
+        .token-error {
+            color: var(--secondary); font-size: 0.9rem;
+            margin-top: 0.5rem; display: none;
+            text-align: center;
+        }
+        .token-error.active { display: block; }
+
+        .token-success {
+            color: var(--success); font-size: 0.9rem;
+            margin-top: 0.5rem; display: none;
+            text-align: center; font-weight: 600;
+        }
+        .token-success.active { display: block; }
+
+        /* FORM */
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label {
+            display: block; margin-bottom: 0.5rem;
+            font-weight: 600; color: var(--text); font-size: 0.95rem;
+        }
+        .form-group label i { margin-right: 8px; color: var(--primary); }
+        .form-input {
+            width: 100%; padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px; color: #fff;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.1rem; font-weight: 500;
+            transition: all 0.3s;
+        }
+        .form-input:focus {
+            outline: none; border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.1);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .form-input::placeholder { color: var(--text-dim); }
+
+        .radio-group {
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .radio-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px; cursor: pointer;
+            transition: all 0.3s;
+        }
+        .radio-item:hover {
+            background: rgba(0, 212, 255, 0.05);
+            border-color: rgba(0, 212, 255, 0.2);
+        }
+        .radio-item input[type="radio"] {
+            width: 20px; height: 20px; accent-color: var(--primary);
+        }
+        .radio-item label {
+            margin: 0; cursor: pointer; flex: 1;
+        }
+
+        .unban-btn {
+            width: 100%; padding: 16px;
+            background: linear-gradient(135deg, var(--secondary), #ff3377);
+            border: none; border-radius: 12px; color: #fff;
+            font-family: 'Orbitron', sans-serif; font-weight: 900;
+            font-size: 1.2rem; cursor: pointer; transition: all 0.3s;
+            text-transform: uppercase; letter-spacing: 2px;
+            position: relative; overflow: hidden;
+        }
+        .unban-btn::before {
+            content: ''; position: absolute; top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        .unban-btn:hover::before { left: 100%; }
+        .unban-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 0, 85, 0.4);
+        }
+        .unban-btn:disabled {
+            opacity: 0.6; cursor: not-allowed; transform: none;
+        }
+
+        /* LOADING */
+        .loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--darker); z-index: 2000;
+            display: none; flex-direction: column;
+            justify-content: center; align-items: center;
+        }
+        .loading-overlay.active { display: flex; }
+
+        .loading-text {
+            font-family: 'Orbitron', sans-serif; font-size: 2rem;
+            color: var(--primary); margin-bottom: 2rem;
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+        }
+        .progress-container {
+            width: 80%; max-width: 500px; height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px; overflow: hidden; position: relative;
+        }
+        .progress-bar {
+            height: 100%; width: 0%;
+            background: linear-gradient(90deg, var(--primary), var(--accent), var(--secondary));
+            border-radius: 10px; transition: width 0.1s linear;
+            position: relative; overflow: hidden;
+        }
+        .progress-bar::after {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 1s infinite;
+        }
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        .progress-text {
+            margin-top: 1rem;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem; color: var(--primary);
+        }
+        .loading-status {
+            margin-top: 1rem; color: var(--text-dim); font-size: 1rem;
+        }
+        .terminal {
+            position: absolute; bottom: 20px; left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem; color: var(--success); opacity: 0.7;
+        }
+
+        /* GLITCH */
+        .glitch-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 3000; display: none; pointer-events: none;
+        }
+        .glitch-overlay.active {
+            display: block;
+            animation: glitchAnim 0.8s ease-out;
+        }
+        @keyframes glitchAnim {
+            0% { background: rgba(0, 212, 255, 0.1); transform: translate(0); }
+            10% { background: rgba(255, 0, 85, 0.2); transform: translate(-10px, 5px); }
+            20% { background: rgba(123, 45, 255, 0.1); transform: translate(10px, -5px); }
+            30% { background: rgba(0, 255, 136, 0.15); transform: translate(-5px, 10px); }
+            40% { background: rgba(255, 170, 0, 0.1); transform: translate(5px, -10px); }
+            50% { background: rgba(0, 212, 255, 0.2); transform: translate(-15px, 0); }
+            60% { background: rgba(255, 0, 85, 0.15); transform: translate(15px, 5px); }
+            70% { background: rgba(123, 45, 255, 0.1); transform: translate(0, -5px); }
+            80% { background: rgba(0, 255, 136, 0.2); transform: translate(-10px, 10px); }
+            90% { background: rgba(255, 170, 0, 0.1); transform: translate(10px, -5px); }
+            100% { background: transparent; transform: translate(0); }
+        }
+
+        /* SUCCESS */
+        .success-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--darker); z-index: 2500;
+            display: none; flex-direction: column;
+            justify-content: center; align-items: center; text-align: center;
+        }
+        .success-overlay.active { display: flex; }
+
+        .success-icon {
+            font-size: 6rem; color: var(--success);
+            margin-bottom: 2rem;
+            animation: successPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes successPop {
+            0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+            100% { transform: scale(1) rotate(0); opacity: 1; }
+        }
+        .success-title {
+            font-family: 'Orbitron', sans-serif; font-size: 3rem;
+            color: var(--success); margin-bottom: 1rem;
+            text-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
+            animation: fadeInUp 0.8s ease-out 0.3s both;
+        }
+        .success-message {
+            font-size: 1.3rem; color: var(--text);
+            margin-bottom: 0.5rem;
+            animation: fadeInUp 0.8s ease-out 0.5s both;
+        }
+        .success-detail {
+            color: var(--text-dim); margin-bottom: 2rem;
+            animation: fadeInUp 0.8s ease-out 0.7s both;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .back-btn {
+            padding: 14px 40px; background: transparent;
+            border: 2px solid var(--success); border-radius: 30px;
+            color: var(--success); font-family: 'Orbitron', sans-serif;
+            font-weight: 700; font-size: 1rem; cursor: pointer;
+            transition: all 0.3s; text-transform: uppercase;
+            letter-spacing: 2px;
+            animation: fadeInUp 0.8s ease-out 0.9s both;
+        }
+        .back-btn:hover {
+            background: var(--success); color: var(--darker);
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.4);
+        }
+
+        /* FOOTER CONTACT */
+        .contact-section {
+            background: rgba(10, 10, 15, 0.9);
+            border-top: 1px solid rgba(0, 212, 255, 0.1);
+            padding: 3rem 2rem; text-align: center;
+        }
+        .contact-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.3rem; color: var(--primary);
+            margin-bottom: 1.5rem;
+        }
+        .contact-links {
+            display: flex; justify-content: center; gap: 2rem;
+            flex-wrap: wrap; margin-bottom: 1.5rem;
+        }
+        .contact-link {
+            display: flex; align-items: center; gap: 8px;
+            color: var(--text); text-decoration: none;
+            font-size: 1rem; transition: all 0.3s;
+            padding: 8px 16px; border-radius: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .contact-link:hover {
+            color: var(--primary);
+            border-color: rgba(0, 212, 255, 0.3);
+            transform: translateY(-3px);
+        }
+        .contact-link i { font-size: 1.2rem; }
+
+        .features-list {
+            display: flex; justify-content: center; gap: 2rem;
+            flex-wrap: wrap; margin-bottom: 1.5rem;
+        }
+        .feature-item {
+            display: flex; align-items: center; gap: 8px;
+            color: var(--success); font-weight: 600;
+        }
+
+        footer {
+            background: rgba(10, 10, 15, 0.95);
+            border-top: 1px solid rgba(0, 212, 255, 0.1);
+            padding: 1.5rem; text-align: center;
+            color: var(--text-dim);
+        }
+        footer a { color: var(--primary); text-decoration: none; }
+
+        .particles {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1; pointer-events: none; overflow: hidden;
+        }
+        .particle {
+            position: absolute; width: 4px; height: 4px;
+            background: var(--primary); border-radius: 50%;
+            opacity: 0.3; animation: float 15s infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.3; } 90% { opacity: 0.3; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+            .games-grid { grid-template-columns: 1fr; }
+            .modal-box { padding: 1.5rem; width: 95%; }
+            .contact-links { flex-direction: column; align-items: center; }
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--darker); }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+    <div class="grid-overlay"></div>
+    <div class="particles" id="particles"></div>
+
+    <header>
+        <div class="header-content">
+            <a href="#" class="logo">
+                <i class="fas fa-shield-alt"></i>
+                <span>GameUnban Pro</span>
+            </a>
+            <div class="live-indicator">
+                <div class="live-dot"></div>
+                <span>Server Online</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <section class="hero">
+            <h1>UNBAN YOUR ACCOUNT</h1>
+            <p class="hero-subtitle">Toko Amanah Pertama dengan Sistem Web untuk Unban</p>
+            <div class="hero-badge">
+                <i class="fas fa-crown"></i> Premium Service
+            </div>
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div class="stat-number" id="stat-users">200</div>
+                    <div class="stat-label">User Aktif</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">99.9%</div>
+                    <div class="stat-label">Success Rate</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Support</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">8</div>
+                    <div class="stat-label">Games</div>
+                </div>
+            </div>
+        </section>
+
+        <h2 class="section-title">
+            <i class="fas fa-fire"></i>
+            Pilih Game
+        </h2>
+        <div class="games-grid" id="gamesGrid"></div>
+    </div>
+
+    <!-- PRICING MODAL -->
+    <div class="modal-overlay" id="pricingOverlay">
+        <div class="modal-box">
+            <button class="close-btn" onclick="closePricing()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-header">
+                <h2 id="pricingGameTitle">Mobile Legends</h2>
+                <p>Pilih paket layanan unban</p>
+            </div>
+            <div class="price-list" id="priceList"></div>
+            <button class="show-qris-btn" id="showQrisBtn" onclick="showQris()">
+                <i class="fas fa-qrcode"></i> TAMPILKAN QRIS
+            </button>
+        </div>
+    </div>
+
+    <!-- QRIS + TOKEN MODAL -->
+    <div class="modal-overlay" id="qrisOverlay">
+        <div class="modal-box">
+            <button class="close-btn" onclick="closeQris()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-header">
+                <h2><i class="fas fa-qrcode"></i> SCAN QRIS</h2>
+                <p>Silakan scan dan transfer sesuai nominal</p>
+            </div>
+            <div class="qris-image-container">
+                <img src="qris.jpg" alt="QRIS Payment" class="qris-image"
+                    onerror="this.src='https://via.placeholder.com/280x280/ffffff/000000?text=QRIS+Payment'">
+            </div>
+            <div class="qris-amount" id="qrisAmount">Rp 100.000</div>
+            <div class="qris-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                PERINGATAN: Jika kurang atau lebih dari nominal yang tersedia dianggap HANGUS!
+            </div>
+
+            <!-- Upload Bukti Transfer -->
+            <div class="form-group">
+                <label><i class="fas fa-receipt"></i> Upload Bukti Transfer</label>
+                <div class="file-upload-box" id="buktiUploadBox">
+                    <input type="file" id="buktiTransfer" accept="image/*" onchange="handleBuktiSelect(this)">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <div class="file-upload-box-text">Klik untuk upload bukti transfer</div>
+                    <div class="file-name-display" id="buktiFileName"></div>
+                </div>
+            </div>
+
+            <!-- TOKEN SECTION -->
+            <div class="token-section" id="tokenSection">
+
+                <!-- STATE 1: Menunggu konfirmasi admin -->
+                <div class="token-waiting" id="tokenWaitingState">
+                    <i class="fas fa-hourglass-half"></i>
+                    <h4><i class="fas fa-lock"></i> MENUNGGU KONFIRMASI ADMIN</h4>
+                    <p>Silakan konfirmasi ke admin setelah melakukan pembayaran. Admin akan memberikan token verifikasi kepada Anda.</p>
+                    <div class="contact-hint">
+                        <i class="fas fa-info-circle"></i>
+                        Hubungi admin via TikTok, Instagram, atau Telegram untuk mendapatkan token.
+                    </div>
+                    <button class="confirm-admin-btn" id="confirmAdminBtn" onclick="confirmToAdmin()">
+                        <i class="fas fa-paper-plane"></i> SUDAH KONFIRMASI KE ADMIN
+                    </button>
+                </div>
+
+                <!-- STATE 2: Input token (muncul setelah klik tombol) -->
+                <div class="token-input-area" id="tokenInputArea">
+                    <div class="token-input-group">
+                        <label><i class="fas fa-key"></i> Masukkan Token dari Admin</label>
+                        <input type="text" class="token-input" id="tokenInput"
+                            placeholder="Paste token yang diberikan admin di sini...">
+                    </div>
+                    <div class="token-error" id="tokenError">
+                        <i class="fas fa-times-circle"></i> Token tidak valid! Silakan cek kembali atau hubungi admin.
+                    </div>
+                    <div class="token-success" id="tokenSuccess">
+                        <i class="fas fa-check-circle"></i> Token valid! Mengalihkan ke form order...
+                    </div>
+                    <button class="verify-token-btn" id="verifyTokenBtn" onclick="verifyToken()">
+                        <i class="fas fa-check-double"></i> VERIFIKASI TOKEN
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- FORM ORDER MODAL -->
+    <div class="modal-overlay" id="formOverlay">
+        <div class="modal-box">
+            <button class="close-btn" onclick="closeForm()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-header">
+                <h2><i class="fas fa-clipboard-list"></i> FORM ORDER UNBAN</h2>
+                <p>Isi data akun dengan lengkap dan benar</p>
+            </div>
+            <form id="orderForm" onsubmit="startUnbanProcess(event)">
+                <div class="form-group">
+                    <label><i class="fas fa-gamepad"></i> Nama Game</label>
+                    <input type="text" class="form-input" id="formGameName" readonly>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-user"></i> Username</label>
+                    <input type="text" class="form-input" id="formUsername" placeholder="Masukkan username akun" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-id-card"></i> User ID</label>
+                    <input type="text" class="form-input" id="formUserId" placeholder="Masukkan User ID" required>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-star"></i> Jenis Layanan</label>
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" name="layanan" id="vipPerm" value="VIP Permanent" required>
+                            <label for="vipPerm">VIP Permanent</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" name="layanan" id="permBiasa" value="Permanent Biasa">
+                            <label for="permBiasa">Permanent Biasa</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" name="layanan" id="harian" value="Harian">
+                            <label for="harian">Harian</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-exclamation-circle"></i> Alasan / Jenis Ban (jika tahu)</label>
+                    <input type="text" class="form-input" id="formAlasan" placeholder="Contoh: Cheat, Toxic, AFK, dll">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-image"></i> Screenshot Bukti Banned</label>
+                    <div class="file-upload-box" id="ssUploadBox">
+                        <input type="file" id="ssBanned" accept="image/*" required onchange="handleSSSelect(this)">
+                        <i class="fas fa-camera"></i>
+                        <div class="file-upload-box-text">Silakan kirim foto SS akun terkena banned</div>
+                        <div class="file-name-display" id="ssFileName"></div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-phone"></i> Kontak Aktif (Ig/Telegram)</label>
+                    <input type="text" class="form-input" id="formKontak" placeholder="Contoh: @username" required>
+                </div>
+                <button type="submit" class="unban-btn" id="unbanBtn">
+                    <i class="fas fa-unlock-alt"></i> PROSES UNBAN SEKARANG
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- LOADING -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-text">MEMPROSES UNBAN...</div>
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="progress-text" id="progressText">0%</div>
+        <div class="loading-status" id="loadingStatus">Menghubungkan ke server...</div>
+        <div class="terminal" id="terminal"></div>
+    </div>
+
+    <!-- GLITCH -->
+    <div class="glitch-overlay" id="glitchOverlay"></div>
+
+    <!-- SUCCESS -->
+    <div class="success-overlay" id="successOverlay">
+        <div class="success-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <h2 class="success-title">AKUN SUKSES UNBANNED!</h2>
+        <p class="success-message">Akun Anda telah berhasil dipulihkan dari status banned.</p>
+        <p class="success-detail">Silakan login ke game Anda dalam 5-10 menit.</p>
+        <button class="back-btn" onclick="resetAll()">
+            <i class="fas fa-arrow-left"></i> Kembali ke Beranda
+        </button>
+    </div>
+
+    <!-- CONTACT SECTION -->
+    <div class="contact-section">
+        <div class="contact-title">
+            <i class="fas fa-headset"></i> Hubungi Kami
+        </div>
+        <div class="features-list">
+            <div class="feature-item"><i class="fas fa-check"></i> Proses via web otomatis</div>
+            <div class="feature-item"><i class="fas fa-check"></i> Support semua jenis ban</div>
+            <div class="feature-item"><i class="fas fa-check"></i> Bergaransi & amanah</div>
+        </div>
+        <div class="contact-links">
+            <a href="https://tiktok.com/@yuka.unbanned" target="_blank" class="contact-link">
+                <i class="fab fa-tiktok"></i> @yuka.unbanned
+            </a>
+            <a href="https://instagram.com/@yukaunbanned" target="_blank" class="contact-link">
+                <i class="fab fa-instagram"></i> @yukaunbanned
+            </a>
+            <a href="https://t.me/yuka_unbanned" target="_blank" class="contact-link">
+                <i class="fab fa-telegram"></i> t.me/yuka_unbanned
+            </a>
+        </div>
+    </div>
+
+    <footer>
+        <p>GameUnban Pro &copy; 2026. All rights reserved.</p>
+        <p style="margin-top: 0.5rem; font-size: 0.85rem;">Disclaimer: This is a demonstration website for educational purposes only.</p>
+    </footer>
+
+    <script>
+        const games = [
+            { id: 'ml', name: 'Mobile Legends', icon: '📱', type: 'MOBA', image: 'foto1.jpg',
+              desc: 'Unban akun Mobile Legends yang terkena suspend permanent atau temporary.' },
+            { id: 'ff', name: 'Free Fire', icon: '🔥', type: 'Battle Royale', image: 'foto2.jpg',
+              desc: 'Pulihkan akun Free Fire yang dibanned karena hack atau pelanggaran.' },
+            { id: 'cod', name: 'Call of Duty Mobile', icon: '🎯', type: 'FPS', image: 'foto3.jpg',
+              desc: 'Unban akun COD Mobile dengan sistem anti-cheat bypass terbaru.' },
+            { id: 'pubg', name: 'PUBG Mobile', icon: '🍗', type: 'Battle Royale', image: 'foto4.jpg',
+              desc: 'Pemulihan akun PUBG Mobile yang terkena banned 10 tahun.' },
+            { id: 'lol', name: 'League of Legends / Wild Rift', icon: '⚔️', type: 'MOBA', image: 'foto5.jpg',
+              desc: 'Unban akun LoL Wild Rift dan PC version dengan cepat.' },
+            { id: 'valo', name: 'Valorant', icon: '🎯', type: 'FPS Tactical', image: 'foto6.jpg',
+              desc: 'Bypass Vanguard anti-cheat untuk unban akun Valorant.' },
+            { id: 'genshin', name: 'Genshin Impact', icon: '⭐', type: 'RPG', image: 'foto7.jpg',
+              desc: 'Pulihkan akun Genshin yang terkena banned karena top-up illegal.' },
+            { id: 'fortnite', name: 'Fortnite', icon: '🏰', type: 'Battle Royale', image: 'foto8.jpg',
+              desc: 'Unban akun Fortnite dengan metode HWID spoofer.' }
+        ];
+
+        const prices = {
+            vip: { label: 'VIP Permanent', amount: 100000, icon: 'fas fa-crown', class: 'vip' },
+            perm: { label: 'Permanent Biasa', amount: 50000, icon: 'fas fa-lock', class: 'perm' },
+            daily: { label: 'Harian', amount: 40000, icon: 'fas fa-clock', class: 'daily' }
+        };
+
+        // Token rahasia - hanya admin yang tahu
+        const tokens = {
+            vip: 'yhurftuijgfdfgavsvgsjbh374856y56784tio6875t98796yht6',
+            perm: 'Kjjajhjgtsfyfeghv3h562562574tgdghbgbhfdhjbjkffjksuy766265',
+            daily: 'hbcbdghfsiye76354rr42re6ttsghsbgdbcgcbddjncjnmknjd77877566363654545gdfggnnjvjfnkduidrhgytrftyefgsdydfvgbhjbvdjnghjoihjsdreftdrtsfegcvxudrfvhtuygtcydrfthgbciuvyftjdubgithv'
+        };
+
+        let selectedGame = null;
+        let selectedPriceKey = null;
+        let selectedPriceAmount = null;
+        let buktiUploaded = false;
+        let ssUploaded = false;
+        let tokenVerified = false;
+
+        function formatRupiah(num) {
+            return 'Rp ' + num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+
+        function renderGames() {
+            const grid = document.getElementById('gamesGrid');
+            grid.innerHTML = games.map(game => `
+                <div class="game-card" onclick="openPricing('${game.id}')">
+                    <img src="${game.image}" alt="${game.name}" class="game-image"
+                        onerror="this.src='https://via.placeholder.com/400x300/12121a/00d4ff?text=${encodeURIComponent(game.name)}'">
+                    <div class="game-info">
+                        <h3 class="game-title">${game.icon} ${game.name}</h3>
+                        <div class="game-meta">
+                            <span class="game-type">${game.type}</span>
+                            <span class="game-status"><i class="fas fa-circle"></i> Online</span>
+                        </div>
+                        <p class="game-desc">${game.desc}</p>
+                        <button class="select-btn">
+                            <i class="fas fa-unlock"></i> Lihat Harga
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openPricing(gameId) {
+            selectedGame = games.find(g => g.id === gameId);
+            document.getElementById('pricingGameTitle').textContent = selectedGame.icon + ' ' + selectedGame.name;
+
+            const list = document.getElementById('priceList');
+            list.innerHTML = Object.entries(prices).map(([key, price]) => `
+                <div class="price-item ${price.class}" onclick="selectPrice('${key}', ${price.amount})">
+                    <div class="price-label">
+                        <i class="${price.icon}"></i>
+                        ${price.label}
+                        ${key === 'vip' ? '<span class="vip-tag">BEST</span>' : ''}
+                    </div>
+                    <div class="price-amount">${formatRupiah(price.amount)}</div>
+                </div>
+            `).join('');
+
+            document.getElementById('showQrisBtn').classList.remove('active');
+            selectedPriceKey = null;
+            selectedPriceAmount = null;
+            document.getElementById('pricingOverlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function selectPrice(key, amount) {
+            selectedPriceKey = key;
+            selectedPriceAmount = amount;
+            document.querySelectorAll('.price-item').forEach(el => el.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+            document.getElementById('showQrisBtn').classList.add('active');
+        }
+
+        function closePricing() {
+            document.getElementById('pricingOverlay').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        function showQris() {
+            if (!selectedPriceKey) return;
+            document.getElementById('qrisAmount').textContent = formatRupiah(selectedPriceAmount);
+            document.getElementById('buktiFileName').classList.remove('show');
+            buktiUploaded = false;
+            tokenVerified = false;
+
+            // Reset token section ke state awal (menunggu)
+            document.getElementById('tokenWaitingState').style.display = 'block';
+            document.getElementById('tokenInputArea').classList.remove('active');
+            document.getElementById('tokenInput').value = '';
+            document.getElementById('tokenError').classList.remove('active');
+            document.getElementById('tokenSuccess').classList.remove('active');
+
+            document.getElementById('qrisOverlay').classList.add('active');
+        }
+
+        function closeQris() {
+            document.getElementById('qrisOverlay').classList.remove('active');
+        }
+
+        function handleBuktiSelect(input) {
+            const fileName = document.getElementById('buktiFileName');
+            if (input.files && input.files[0]) {
+                fileName.textContent = '✓ ' + input.files[0].name;
+                fileName.classList.add('show');
+                buktiUploaded = true;
+            }
+        }
+
+        // User klik "Sudah Konfirmasi ke Admin" -> muncul input token
+        function confirmToAdmin() {
+            if (!buktiUploaded) {
+                alert('Silakan upload bukti transfer terlebih dahulu!');
+                return;
+            }
+
+            // Sembunyikan waiting state, tampilkan input token
+            document.getElementById('tokenWaitingState').style.display = 'none';
+            document.getElementById('tokenInputArea').classList.add('active');
+        }
+
+        // Verifikasi token yang diinput user
+        function verifyToken() {
+            const inputToken = document.getElementById('tokenInput').value.trim();
+            const correctToken = tokens[selectedPriceKey];
+            const errorEl = document.getElementById('tokenError');
+            const successEl = document.getElementById('tokenSuccess');
+
+            errorEl.classList.remove('active');
+            successEl.classList.remove('active');
+
+            if (inputToken === correctToken) {
+                successEl.classList.add('active');
+                tokenVerified = true;
+
+                // Delay sebentar lalu buka form
+                setTimeout(() => {
+                    closeQris();
+                    closePricing();
+                    openForm();
+                }, 1500);
+            } else {
+                errorEl.classList.add('active');
+                tokenVerified = false;
+            }
+        }
+
+        function openForm() {
+            document.getElementById('formGameName').value = selectedGame.name;
+            document.getElementById('ssFileName').classList.remove('show');
+            ssUploaded = false;
+            document.getElementById('formOverlay').classList.add('active');
+        }
+
+        function closeForm() {
+            document.getElementById('formOverlay').classList.remove('active');
+            document.getElementById('orderForm').reset();
+        }
+
+        function handleSSSelect(input) {
+            const fileName = document.getElementById('ssFileName');
+            if (input.files && input.files[0]) {
+                fileName.textContent = '✓ ' + input.files[0].name;
+                fileName.classList.add('show');
+                ssUploaded = true;
+            }
+        }
+
+        function startUnbanProcess(e) {
+            e.preventDefault();
+            if (!ssUploaded) {
+                alert('Silakan upload screenshot bukti banned terlebih dahulu!');
+                return;
+            }
+
+            const btn = document.getElementById('unbanBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> MEMPROSES...';
+
+            setTimeout(() => {
+                closeForm();
+                document.getElementById('loadingOverlay').classList.add('active');
+                startLoading();
+            }, 500);
+        }
+
+        const terminalMessages = [
+            '> Initializing secure connection...',
+            '> Bypassing anti-cheat detection...',
+            '> Fetching account data from database...',
+            '> Removing ban flag from server...',
+            '> Clearing HWID blacklist...',
+            '> Generating new session token...',
+            '> Verifying account integrity...',
+            '> Finalizing unban process...'
+        ];
+
+        function startLoading() {
+            let progress = 0;
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            const loadingStatus = document.getElementById('loadingStatus');
+            const terminal = document.getElementById('terminal');
+
+            const interval = setInterval(() => {
+                progress += 1;
+                if (progress > 100) progress = 100;
+
+                progressBar.style.width = progress + '%';
+                progressText.textContent = progress + '%';
+
+                if (progress < 20) loadingStatus.textContent = 'Menghubungkan ke server game...';
+                else if (progress < 40) loadingStatus.textContent = 'Memverifikasi data akun...';
+                else if (progress < 60) loadingStatus.textContent = 'Menghapus flag banned...';
+                else if (progress < 80) loadingStatus.textContent = 'Memperbarui database...';
+                else if (progress < 95) loadingStatus.textContent = 'Finalisasi proses...';
+                else loadingStatus.textContent = 'Selesai!';
+
+                const msgIndex = Math.floor((progress / 100) * terminalMessages.length);
+                if (terminalMessages[msgIndex] && Math.random() > 0.5) {
+                    terminal.textContent = terminalMessages[msgIndex];
+                }
+
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(showGlitch, 500);
+                }
+            }, 600);
+        }
+
+        function showGlitch() {
+            const glitch = document.getElementById('glitchOverlay');
+            const loading = document.getElementById('loadingOverlay');
+            glitch.classList.add('active');
+            setTimeout(() => {
+                loading.classList.remove('active');
+                glitch.classList.remove('active');
+                showSuccess();
+            }, 800);
+        }
+
+        function showSuccess() {
+            document.getElementById('successOverlay').classList.add('active');
+            createConfetti();
+        }
+
+        function createConfetti() {
+            const colors = ['#00d4ff', '#ff0055', '#7b2dff', '#00ff88', '#ffaa00', '#ffd700'];
+            for (let i = 0; i < 60; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.style.cssText = `
+                        position: fixed; width: ${Math.random()*10+5}px; height: ${Math.random()*10+5}px;
+                        background: ${colors[Math.floor(Math.random()*colors.length)]};
+                        left: ${Math.random()*100}vw; top: -10px; border-radius: 50%; z-index: 3000;
+                        pointer-events: none; animation: float ${Math.random()*3+2}s linear forwards;
+                    `;
+                    document.body.appendChild(confetti);
+                    setTimeout(() => confetti.remove(), 5000);
+                }, i * 50);
+            }
+        }
+
+        function resetAll() {
+            document.getElementById('successOverlay').classList.remove('active');
+            document.getElementById('unbanBtn').disabled = false;
+            document.getElementById('unbanBtn').innerHTML = '<i class="fas fa-unlock-alt"></i> PROSES UNBAN SEKARANG';
+            document.getElementById('progressBar').style.width = '0%';
+            document.getElementById('progressText').textContent = '0%';
+            document.getElementById('terminal').textContent = '';
+            document.getElementById('orderForm').reset();
+            buktiUploaded = false;
+            ssUploaded = false;
+            tokenVerified = false;
+            selectedPriceKey = null;
+            selectedPriceAmount = null;
+            selectedGame = null;
+        }
+
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                const colors = ['var(--primary)', 'var(--accent)', 'var(--secondary)'];
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                container.appendChild(particle);
+            }
+        }
+
+        function animateStats() {
+            const statUsers = document.getElementById('stat-users');
+            let current = 200;
+            setInterval(() => {
+                current += Math.floor(Math.random() * 3) + 1;
+                statUsers.textContent = current;
+            }, 2000);
+        }
+
+        // Close on outside click
+        document.getElementById('pricingOverlay').addEventListener('click', e => {
+            if (e.target === e.currentTarget) closePricing();
+        });
+        document.getElementById('qrisOverlay').addEventListener('click', e => {
+            if (e.target === e.currentTarget) closeQris();
+        });
+        document.getElementById('formOverlay').addEventListener('click', e => {
+            if (e.target === e.currentTarget) closeForm();
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderGames();
+            createParticles();
+            animateStats();
+        });
+    </script>
+</body>
+</html>
